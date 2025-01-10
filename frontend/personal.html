@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Personal</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/8f2cb0ebcf.js" crossorigin="anonymous"></script>
+
+</head>
+<body>
+<div class="container mt-5">
+    <h2 class="text-center">Listado de Personal Medico</h2>
+    <a href="/Inicio/index.html" style="position: absolute; top: 5%; left: 10%;"><i class="fa-solid fa-circle-xmark" style="color: #ff0000; font-size: 3em;"></i></a>
+    <table class="table table-bordered table-striped mt-4" id="personalTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Género</th>
+            <th>Puesto</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    async function cargarPersonal() {
+        try {
+            const response = await fetch('http://localhost:8080/personal/all');
+            if (!response.ok) {
+                throw new Error('Error al obtener el listado de personal');
+            }
+            const data = await response.json();
+
+            const tbody = document.getElementById('personalTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            if (data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="5" class="text-center">No hay turnos disponibles.</td></tr>';
+            }
+
+            data.data.forEach(personal => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${personal.id}</td>
+                    <td>${personal.name}</td>
+                    <td>${personal.edad}</td>
+                    <td>${personal.genero}</td>
+                    <td>${personal.puesto}</td>
+                `;
+                tbody.appendChild(fila);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    window.onload = cargarPersonal;
+</script>
+</body>
+</html>
