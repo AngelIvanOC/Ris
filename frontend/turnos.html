@@ -1,0 +1,267 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gestión de Citas</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/8f2cb0ebcf.js" crossorigin="anonymous"></script>
+</head>
+<body>
+
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <a href="/Inicio/index.html"><i class="fa-solid fa-circle-xmark" style="color: #ff0000; font-size: 3em;"></i></a>
+        <h2 class="text-center">Listado de Citas</h2>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Crear Cita</button>
+    </div>
+
+    <!-- Tabla de Citas -->
+    <table class="table table-bordered table-striped mt-4" id="citasTable">
+        <thead>
+        <tr style="text-align: center;">
+            <th>ID</th>
+            <th>Personal</th>
+            <th>Paciente</th>
+            <th>Fecha</th>
+            <th>Hora</th>
+            <th>Motivo</th>
+            <th>Diagnóstico</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Modal de Crear Cita -->
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Crear Cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createForm" class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="personalId" class="form-label">ID Personal</label>
+                                <input type="number" class="form-control" id="personalId" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="pacientesId" class="form-label">ID Paciente</label>
+                                <input type="number" class="form-control" id="pacientesId" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fechaCita" class="form-label">Fecha de Cita</label>
+                                <input type="date" class="form-control" id="fechaCita" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="horaCita" class="form-label">Hora de Cita</label>
+                                <input type="time" class="form-control" id="horaCita" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="motivo" class="form-label">Motivo</label>
+                                <input type="text" class="form-control" id="motivo" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="diagnostico" class="form-label">Diagnóstico</label>
+                                <input type="text" class="form-control" id="diagnostico" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Cita -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Editar Cita</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm" class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="editPersonalId" class="form-label">ID Personal</label>
+                                <input type="number" class="form-control" id="editPersonalId" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editPacientesId" class="form-label">ID Paciente</label>
+                                <input type="number" class="form-control" id="editPacientesId" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editFechaCita" class="form-label">Fecha de Cita</label>
+                                <input type="date" class="form-control" id="editFechaCita" required>
+                            </div>
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="editHoraCita" class="form-label">Hora de Cita</label>
+                                <input type="time" class="form-control" id="editHoraCita" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editMotivo" class="form-label">Motivo</label>
+                                <input type="text" class="form-control" id="editMotivo" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editDiagnostico" class="form-label">Diagnóstico</label>
+                                <input type="text" class="form-control" id="editDiagnostico" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<script>
+    const apiUrl = 'http://localhost:8080/citas';
+    let editCitaId = null;
+
+    // Función para obtener todas las citas
+    async function obtenerCitas() {
+        try {
+            const response = await fetch(apiUrl);
+            const data = await response.json();
+            const tableBody = document.querySelector('#citasTable tbody');
+            tableBody.innerHTML = '';
+            data.forEach(cita => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${cita.id}</td>
+                    <td>${cita.nombrePersonal}</td>
+                    <td>${cita.nombrePacientes}</td>
+                    <td>${cita.fechaCita}</td>
+                    <td>${cita.horaCita}</td>
+                    <td>${cita.motivo}</td>
+                    <td>${cita.diagnostico}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editarCita(${cita.id})">Editar</button>
+                        <button class="btn btn-danger" onclick="eliminarCita(${cita.id})">Eliminar</button>
+                    </td>
+                `;
+                tableBody.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error al obtener las citas:', error);
+        }
+    }
+
+    async function crearCita(event) {
+    event.preventDefault();
+    const personalId = document.getElementById('personalId').value;
+    const pacientesId = document.getElementById('pacientesId').value;
+    const fechaCita = document.getElementById('fechaCita').value;
+    const horaCita = document.getElementById('horaCita').value;
+    const motivo = document.getElementById('motivo').value;
+    const diagnostico = document.getElementById('diagnostico').value;
+
+    const citaData = {
+        personal: { id: personalId },
+        pacientes: { id: pacientesId },
+        fechaCita: fechaCita,
+        horaCita: horaCita,
+        motivo: motivo,
+        diagnostico: diagnostico
+    };
+
+    try {
+        await fetch(apiUrl, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(citaData)
+        });
+        await obtenerCitas();
+        document.getElementById('createForm').reset();
+        const createModal = bootstrap.Modal.getInstance(document.getElementById('createModal'));
+        createModal.hide();
+    } catch (error) {
+        console.error('Error al crear la cita:', error);
+    }
+}
+
+    // Función para eliminar una cita
+    async function eliminarCita(id) {
+        if (confirm('¿Estás seguro de eliminar este reporte?')) {
+            try {
+                await fetch(`${apiUrl}/${id}`, { method: 'DELETE' });
+                await obtenerCitas();
+            } catch (error) {
+                console.error('Error al eliminar la cita:', error);
+            }
+        }
+    }
+
+    // Función para editar una cita
+    async function editarCita(id) {
+        try {
+            const response = await fetch(`${apiUrl}/${id}`);
+            const cita = await response.json();
+
+            document.getElementById('editPersonalId').value = cita.personalId;
+            document.getElementById('editPacientesId').value = cita.pacientesId;
+            document.getElementById('editFechaCita').value = cita.fechaCita;
+            document.getElementById('editHoraCita').value = cita.horaCita;
+            document.getElementById('editMotivo').value = cita.motivo;
+            document.getElementById('editDiagnostico').value = cita.diagnostico;
+
+            document.getElementById('editForm').onsubmit = (e) => actualizarCita(e, id);
+
+            const editModal = new bootstrap.Modal(document.getElementById('editModal'));
+            editModal.show();
+        } catch (error) {
+            console.error('Error al obtener la cita para editar:', error);
+        }
+    }
+
+    // Función para actualizar una cita
+    async function actualizarCita(event, id) {
+    event.preventDefault();
+
+    const personalId = document.getElementById('editPersonalId').value;
+    const pacientesId = document.getElementById('editPacientesId').value;
+    const fechaCita = document.getElementById('editFechaCita').value;
+    const horaCita = document.getElementById('editHoraCita').value;
+    const motivo = document.getElementById('editMotivo').value;
+    const diagnostico = document.getElementById('editDiagnostico').value;
+
+    const citaData = {
+        personal: { id: personalId },
+        pacientes: { id: pacientesId },
+        fechaCita: fechaCita,
+        horaCita: horaCita,
+        motivo: motivo,
+        diagnostico: diagnostico
+    };
+
+    try {
+        await fetch(`${apiUrl}/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(citaData)
+        });
+        await obtenerCitas();
+        const editModal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
+        editModal.hide();
+    } catch (error) {
+        console.error('Error al actualizar la cita:', error);
+    }
+}
+
+    window.onload = obtenerCitas;
+    document.getElementById('createForm').addEventListener('submit', crearCita);
+</script>
+
+</body>
+</html>

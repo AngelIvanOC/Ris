@@ -1,0 +1,234 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Listado de Pacientes</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/8f2cb0ebcf.js" crossorigin="anonymous"></script>
+</head>
+<body>
+<div class="container mt-5">
+
+    <div class="d-flex justify-content-between align-items-center">
+        <a href="/Inicio/index.html"><i class="fa-solid fa-circle-xmark" style="color: #ff0000; font-size: 3em;"></i></a>
+        <h2 class="text-center">Listado de Pacientes</h2>
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Agregar Paciente</button>
+    </div>
+
+    <!-- Modal para crear paciente -->
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Nuevo Paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createPacienteForm" onsubmit="guardarPaciente(event, 'create')">
+                        <div class="mb-3">
+                            <label for="createName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="createName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createEdad" class="form-label">Edad</label>
+                            <input type="text" class="form-control" id="createEdad" name="edad" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createGenero" class="form-label">Género</label>
+                            <select name="genero" id="createGenero" class="form-control" required>
+                                <option value="Genero" selected disabled>Genero</option>
+                                <option value="H">H</option>
+                                <option value="M">M</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="createFechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="createFechaNacimiento" name="fechaNacimiento" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para editar paciente -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Editar Paciente</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editPacienteForm" onsubmit="guardarPaciente(event, 'edit')">
+                        <input type="hidden" id="editId" name="id">
+                        <div class="mb-3">
+                            <label for="editName" class="form-label">Nombre</label>
+                            <input type="text" class="form-control" id="editName" name="name" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editEdad" class="form-label">Edad</label>
+                            <input type="text" class="form-control" id="editEdad" name="edad" required>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editGenero" class="form-label">Género</label>
+                            <select name="genero" id="editGenero" class="form-control" required>
+                                <option value="Genero" selected disabled>Genero</option>
+                                <option value="H">H</option>
+                                <option value="M">M</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="editFechaNacimiento" class="form-label">Fecha de Nacimiento</label>
+                            <input type="date" class="form-control" id="editFechaNacimiento" name="fechaNacimiento" required>
+                        </div>
+                        <button type="submit" class="btn btn-success">Guardar</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancelar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Tabla de pacientes -->
+    <table class="table table-bordered table-striped mt-4" id="pacientesTable">
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Nombre</th>
+            <th>Edad</th>
+            <th>Género</th>
+            <th>Fecha de Nacimiento</th>
+            <th>Acciones</th>
+        </tr>
+        </thead>
+        <tbody>
+        </tbody>
+    </table>
+</div>
+
+<script>
+    async function cargarPacientes() {
+        try {
+            const response = await fetch('http://localhost:8080/pacientes/all');
+            if (!response.ok) {
+                throw new Error('Error al obtener el listado de pacientes');
+            }
+            const data = await response.json();
+
+            const tbody = document.getElementById('pacientesTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            if (data.data.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" class="text-center">No hay pacientes disponibles.</td></tr>';
+            }
+
+            data.data.forEach(paciente => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${paciente.id}</td>
+                    <td>${paciente.name}</td>
+                    <td>${paciente.edad}</td>
+                    <td>${paciente.genero}</td>
+                    <td>${paciente.fechaNacimiento}</td>
+                    <td>
+                        <button class="btn btn-warning btn-sm" onclick="editarPaciente(${paciente.id})">Editar</button>
+                        <button class="btn btn-danger btn-sm" onclick="eliminarPaciente(${paciente.id})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    function limpiarFormulario(formId) {
+        document.getElementById(formId).reset();
+    }
+
+    async function guardarPaciente(event, formType) {
+        event.preventDefault();
+
+        const formId = formType === 'create' ? 'createPacienteForm' : 'editPacienteForm';
+        const formData = new FormData(document.getElementById(formId));
+        const data = Object.fromEntries(formData);
+
+        try {
+            const response = await fetch(data.id ? `http://localhost:8080/pacientes/update` : `http://localhost:8080/pacientes/save`, {
+                method: data.id ? 'PUT' : 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            });
+
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Error al guardar el paciente');
+            }
+
+            cargarPacientes();
+            limpiarFormulario(formId);
+            const modalId = formType === 'create' ? 'createModal' : 'editModal';
+            const modal = bootstrap.Modal.getInstance(document.getElementById(modalId));
+            modal.hide();
+
+        } catch (error) {
+            console.error('Error:', error);
+            alert(error.message);
+        }
+    }
+
+    async function editarPaciente(id) {
+        try {
+            const response = await fetch(`http://localhost:8080/pacientes/${id}`);
+            if (!response.ok) {
+                throw new Error('Error al cargar los datos del paciente');
+            }
+
+            const data = await response.json();
+            document.getElementById('editId').value = data.data.id;
+            document.getElementById('editName').value = data.data.name;
+            document.getElementById('editEdad').value = data.data.edad;
+            document.getElementById('editGenero').value = data.data.genero;
+            document.getElementById('editFechaNacimiento').value = data.data.fechaNacimiento;
+
+            const modal = new bootstrap.Modal(document.getElementById('editModal'));
+            modal.show();
+
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+
+async function eliminarPaciente(id) {
+    if (confirm('¿Estás seguro de eliminar este registro?')) {
+        try {
+            const response = await fetch(`http://localhost:8080/pacientes/delete/${id}`, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                cargarPacientes();
+            } else {
+                throw new Error('Error al eliminar el paciente');
+            }
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+}
+
+window.onload = cargarPacientes;
+
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

@@ -1,0 +1,315 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Reportes de Turnos</title>
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+    <script src="https://kit.fontawesome.com/8f2cb0ebcf.js" crossorigin="anonymous"></script>
+<!-- CSS de Bootstrap -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css">
+
+<!-- JS de Bootstrap (Este es necesario para que los modales funcionen) -->
+
+</head>
+<body>
+<div class="container mt-5">
+    <div class="d-flex justify-content-between align-items-center">
+        <a href="/Inicio/index.html"><i class="fa-solid fa-circle-xmark" style="color: #ff0000; font-size: 3em;"></i></a>
+        <h2 class="text-center">Listado de Asistencias</h2>
+        <!-- Botón para abrir el formulario de crear reporte -->
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#createModal">Crear Reporte</button>    
+    </div>
+    
+    <!-- Tabla de Reportes -->
+    <table class="table table-bordered table-striped mt-4" id="reportesTable">
+        <thead>
+        <tr style="text-align: center;">
+            <th>ID</th>
+            <th>Responsable</th> 
+            <th>Descripción</th>
+            <th style="width: 100px;">Fecha</th>
+            <th>Turno</th>
+            <th style="width: 20px;">Hora Entrada</th>
+            <th style="width: 20px;">Hora Salida</th>
+            <th>Asistencia</th>
+            <th style="width: 180px;">Acciones</th>
+        </tr>
+        </thead>
+        <tbody></tbody>
+    </table>
+
+    <!-- Modal de Crear Reporte -->
+    <div class="modal fade" id="createModal" tabindex="-1" aria-labelledby="createModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="createModalLabel">Crear Reporte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="createForm" class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="personalId" class="form-label">ID Personal</label>
+                                <input type="number" class="form-control" id="personalId" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="fechaFalta" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="fechaFalta" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="turno" class="form-label">Turno</label>
+                                <select name="turno" id="turno" class="form-control" required>
+                                    <option value="Turno" selected disabled>Turno</option>
+                                    <option value="Matutino">Matutino</option>
+                                    <option value="Vespertino">Vespertino</option>
+                                </select>
+                            </div>
+                            
+                        </div>
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="horaEntrada" class="form-label">Hora de Entrada</label>
+                                <input type="time" class="form-control" id="horaEntrada" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="horaSalida" class="form-label">Hora de Salida</label>
+                                <input type="time" class="form-control" id="horaSalida" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="asistencia" class="form-label">Asistencia</label>
+                                <select id="asistencia" class="form-control" required>
+                                    <option value="true">Asistió</option>
+                                    <option value="false">No asistió</option>
+                                </select>
+                            </div>
+                        </div>     
+                        <div class="mb-3">
+                            <label for="descripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="descripcion" rows="3" required></textarea>
+                        </div> 
+                        <button type="submit" class="btn btn-primary">Guardar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal de Editar Reporte -->
+    <div class="modal fade" id="editModal" tabindex="-1" aria-labelledby="editModalLabel" aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="editModalLabel">Editar Reporte</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="editForm" class="row">
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="editPersonalId" class="form-label">ID Personal</label>
+                                <input type="number" class="form-control" id="editPersonalId" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editFechaFalta" class="form-label">Fecha</label>
+                                <input type="date" class="form-control" id="editFechaFalta" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editTurno" class="form-label">Turno</label>
+                                <select name="turno" id="editTurno" class="form-control" required>
+                                    <option value="Turno" selected disabled>Turno</option>
+                                    <option value="Matutino">Matutino</option>
+                                    <option value="Vespertino">Vespertino</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="col">
+                            <div class="mb-3">
+                                <label for="editHoraEntrada" class="form-label">Hora de Entrada</label>
+                                <input type="time" class="form-control" id="editHoraEntrada" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editHoraSalida" class="form-label">Hora de Salida</label>
+                                <input type="time" class="form-control" id="editHoraSalida" required>
+                            </div>
+                            <div class="mb-3">
+                                <label for="editAsistencia" class="form-label">Asistencia</label>
+                                <select id="editAsistencia" class="form-control" required>
+                                    <option value="true">Asistió</option>
+                                    <option value="false">No asistió</option>
+                                </select>
+                            </div>
+                        </div>
+
+                        <div class="mb-3">
+                            <label for="editDescripcion" class="form-label">Descripción</label>
+                            <textarea class="form-control" id="editDescripcion" rows="3" required></textarea>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Actualizar</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    async function cargarReportes() {
+        try {
+            const response = await fetch('http://localhost:8080/reportes');
+            if (!response.ok) {
+                throw new Error('Error al obtener los reportes');
+            }
+            const data = await response.json();
+
+            const tbody = document.getElementById('reportesTable').querySelector('tbody');
+            tbody.innerHTML = '';
+
+            data.forEach(reporte => {
+                const fila = document.createElement('tr');
+                fila.innerHTML = `
+                    <td>${reporte.id}</td>
+                    <td>${reporte.nombrePersonal}</td>
+                    <td>${reporte.descripcion}</td>
+                    <td>${reporte.fechaFalta}</td>
+                    <td>${reporte.turno}</td>
+                    <td>${reporte.horaEntrada}</td>
+                    <td>${reporte.horaSalida}</td>
+                    <td>${reporte.asistencia ? 'Asistió' : 'No asistió'}</td>
+                    <td>
+                        <button class="btn btn-warning" onclick="editarReporte(${reporte.id})">Editar</button>
+                        <button class="btn btn-danger" onclick="eliminarReporte(${reporte.id})">Eliminar</button>
+                    </td>
+                `;
+                tbody.appendChild(fila);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+        }
+    }
+
+    async function crearReporte(event) {
+    event.preventDefault();
+    const personalId = document.getElementById('personalId').value;
+    const fechaFalta = document.getElementById('fechaFalta').value;
+    const turno = document.getElementById('turno').value;
+    const descripcion = document.getElementById('descripcion').value;
+    const horaEntrada = document.getElementById('horaEntrada').value;
+    const horaSalida = document.getElementById('horaSalida').value;
+    const asistencia = document.getElementById('asistencia').value === 'true';
+
+    const reporte = {
+        personal: { id: personalId },
+        fechaFalta: fechaFalta,
+        turno: turno,
+        descripcion: descripcion,
+        horaEntrada: horaEntrada,
+        horaSalida: horaSalida,
+        asistencia: asistencia
+    };
+
+    try {
+        const response = await fetch('http://localhost:8080/reportes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reporte)
+        });
+
+        if (response.ok) {
+            cargarReportes();
+            document.getElementById('createForm').reset();
+            new bootstrap.Modal(document.getElementById('createModal')).hide();
+        }
+    } catch (error) {
+        console.error('Error al crear reporte:', error);
+    }
+}
+
+
+async function editarReporte(id) {
+    try {
+        const response = await fetch(`http://localhost:8080/reportes/${id}`);
+        const reporte = await response.json();
+        
+        document.getElementById('editPersonalId').value = reporte.personalId;
+        document.getElementById('editFechaFalta').value = reporte.fechaFalta;
+        document.getElementById('editTurno').value = reporte.turno;
+        document.getElementById('editDescripcion').value = reporte.descripcion;
+
+        // Asignar los valores de hora de entrada, hora de salida y asistencia
+        document.getElementById('editHoraEntrada').value = reporte.horaEntrada || '';
+        document.getElementById('editHoraSalida').value = reporte.horaSalida || '';
+        document.getElementById('editAsistencia').value = reporte.asistencia ? 'true' : 'false';
+
+        // Actualizar la función de submit para enviar los datos actualizados
+        document.getElementById('editForm').onsubmit = (e) => actualizarReporte(e, id);
+        
+        new bootstrap.Modal(document.getElementById('editModal')).show();
+    } catch (error) {
+        console.error('Error al obtener reporte:', error);
+    }
+}
+
+
+async function actualizarReporte(event, id) {
+    event.preventDefault();
+
+    const personalId = document.getElementById('editPersonalId').value;
+    const fechaFalta = document.getElementById('editFechaFalta').value;
+    const turno = document.getElementById('editTurno').value;
+    const descripcion = document.getElementById('editDescripcion').value;
+    const horaEntrada = document.getElementById('editHoraEntrada').value;
+    const horaSalida = document.getElementById('editHoraSalida').value;
+    const asistencia = document.getElementById('editAsistencia').value === 'true';
+
+    const reporte = {
+        personal: { id: personalId },
+        fechaFalta: fechaFalta,
+        turno: turno,
+        descripcion: descripcion,
+        horaEntrada: horaEntrada,
+        horaSalida: horaSalida,
+        asistencia: asistencia
+    };
+
+    try {
+        const response = await fetch(`http://localhost:8080/reportes/${id}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(reporte)
+        });
+
+        if (response.ok) {
+            cargarReportes();
+            document.getElementById('editForm').reset();
+            new bootstrap.Modal(document.getElementById('editModal')).hide();
+        }
+    } catch (error) {
+        console.error('Error al actualizar reporte:', error);
+    }
+}
+
+
+    async function eliminarReporte(id) {
+        if (confirm('¿Estás seguro de eliminar este reporte?')) {
+            try {
+                const response = await fetch(`http://localhost:8080/reportes/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    cargarReportes();
+                }
+            } catch (error) {
+                console.error('Error al eliminar reporte:', error);
+            }
+        }
+    }
+
+    window.onload = cargarReportes;
+    document.getElementById('createForm').addEventListener('submit', crearReporte);
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>
