@@ -1,0 +1,92 @@
+//1. Crea una base de datos llamada pokedex.
+use pokedex
+//2. Crea una colección llamada pokemon.
+db.createCollection("pokemon")
+//3. Inserta los documentos que encontrarás en el archivo data.json adjunto a la tarea asignada en Classroom.
+//4. Escribe una consulta para responder a las siguientes preguntas:
+//a. ¿Cuántas especies de Pokémon distintas existen?
+db.pokemon.distinct("species").length
+//b. ¿Cuántos Pokémon tienen la palabra mercy en su descripción?
+db.pokemon.find({ description: { $regex: "mercy" } }).count()
+//c. ¿Cuál es el nombre de los Pokémon cuya especie es Egg Pokémon?
+db.pokemon.find({ species: "Egg Pokémon" }, { "name.english": 1, _id: 0 });
+
+const cursor = db.pokemon.find(
+    { species: "Egg Pokémon" },
+    { "name.english": 1, _id: 0 }
+);
+
+cursor.forEach(doc => console.log(doc.name.english));
+//d. ¿Cuál es el segundo Pokémon más pesado (weight)?
+const cursor = db.pokemon.find({}, { "name.english": 1, "profile.weight": 1, _id: 0 })
+    .sort({ "profile.weight": -1 }).toArray()
+print(cursor[1].name.english)
+
+db.pokemon.find({}, { "name.english": 1, "profile.weight": 1, _id: 0 })
+    .sort({ "profile.weight": -1 })
+    .skip(1)
+    .limit(1);
+//e. ¿Cuáles son los Pokémon cuyo ataque especial (Sp. Attack) se encuentra entre 50 y 100?
+const cursor = db.pokemon.find({ base: { $exists: true} }, { base: 1, name: 1 }).toArray()
+cursor.forEach( i => {
+    if(i.base["Sp. Attack"] > 50 && i.base["Sp. Attack"] < 100)
+        print(i.name.english)
+})
+//f. ¿Qué Pokémon tienen la misma cantidad de ataque y defensa?
+db.pokemon.find(
+    { $expr: { $eq: ["$base.Attack", "$base.Defense"] } },
+    { "name.english": 1, _id: 0 }
+);
+//g. ¿Cuál es el Pokémon con mayor cantidad de habilidades (abilities)?
+let maxAbilities = 0;
+let pokemonWithMaxAbilities = null;
+const cursor = db.pokemon.find(
+    { "profile.ability": { $exists: true } },
+    { "name.english": 1, "profile.ability": 1, _id: 0 }
+);
+
+cursor.forEach(doc => {
+    const abilitiesCount = doc.profile.ability.length;
+    if (abilitiesCount > maxAbilities) {
+        maxAbilities = abilitiesCount;
+        pokemonWithMaxAbilities = doc;
+    }
+});
+
+if (pokemonWithMaxAbilities) {
+    print(`Pokémon con más habilidades: ${pokemonWithMaxAbilities.name.english}`);
+    print(`Cantidad de habilidades: ${maxAbilities}`);
+} else {
+    print("No se encontraron Pokémon con habilidades.");
+}
+
+db.pokemon.aggregate([
+    { $project: { "name.english": 1, abilitiesCount: { $size: "$profile.ability" } } },
+    { $sort: { abilitiesCount: -1 } },
+    { $limit: 1 }
+]);
+//5. Actualiza los Pokémon de la especie Dragon Pokémon, añadiéndoles un atributo llamado region con el valor Unova.
+db.pokemon.updateMany(
+    { species: "Dragon Pokémon" },
+    { $set: { region: "Unova" } }
+);
+//6. Actualiza el documento correspondiente a Greninja, retirándole el tipo Dark.
+db.pokemon.updateOne(
+    { "name.english": "Greninja" },
+    { $pull: { type: "Dark" } }
+);
+//7. Añade un nuevo documento del Pokémon que prefieras. Si no conoces información al respecto, invéntala considerando los atributos de los documentos previos.
+db.pokemon.insertOne({
+    id: 10001,
+    name: { english: "Flamion", japanese: "フレイムオン", chinese: "火焰狮", french: "Flamion" },
+    type: ["Fire"],
+    base: { HP: 75, Attack: 85, Defense: 60, "Sp. Attack": 90, "Sp. Defense": 70, Speed: 100 },
+    species: "Flame Pokémon",
+    description: "Flamion controls flames to defend its territory and protect its pack.",
+    profile: { height: "1.2 m", weight: "40 kg", ability: [["Blaze", "false"], ["Flash Fire", "true"]] },
+    region: "Kalos"
+});
+//8. Elimina el documento que insertaste, utilizando su identificador.
+db.pokemon.deleteOne({ _id: ObjectId("67925b33380e1a628144ad43") });
+//9. Elimina todos los Pokémon que contengan Sword Pokémon en el nombre de su especie.
+db.pokemon.deleteMany({ species: { $regex: "Sword Pokémon" } });
